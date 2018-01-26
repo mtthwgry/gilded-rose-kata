@@ -1,11 +1,17 @@
 package com.gildedrose;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 class GildedRose {
     Item[] items;
 
     private static String AGED_BRIE = "Aged Brie";
     private static String BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert";
     private static String SULFURAS = "Sulfuras, Hand of Ragnaros";
+
+    private static Integer MAX_QUALITY = 50;
+    private static Integer MIN_QUALITY = 0;
 
     public GildedRose(Item[] items) {
         this.items = items;
@@ -45,9 +51,10 @@ class GildedRose {
     }
 
     private void decrementQuality(Item item, int decrement) {
-        if (itemHasQuality(item)) {
-            item.quality = item.quality - decrement;
-        }
+        if (!itemHasQuality(item)) return;
+        if (isConjured(item)) decrement = decrement * 2;
+
+        item.quality = Math.max(MIN_QUALITY, item.quality - decrement);
     }
 
     private void decrementSellIn(Item item) {
@@ -73,8 +80,15 @@ class GildedRose {
 
     private void increaseQuality(Item item, Integer increment) {
         if (qualityMaxedOut(item)) return;
+        if (isConjured(item)) increment = increment * 2;
 
-        item.quality = item.quality + increment;
+        item.quality = Math.min(MAX_QUALITY, item.quality + increment);
+    }
+
+    private boolean isConjured(Item item) {
+        Pattern conjured = Pattern.compile(".*Conjured.*");
+        Matcher matcher = conjured.matcher(item.name);
+        return matcher.find();
     }
 
     private boolean isAgedBrie(Item item) {
